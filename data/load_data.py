@@ -1,57 +1,39 @@
 import os
 import pandas as pd
 from typing import Tuple
-def load_instacart_raw(data_dir: str) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """Load in raw Instacart CV's from direct data, 
-    return orders, orders_products, products"""
-    orders_path = os.path.join(data_dir, "orders_csv")
-    prior_path = os.path.join(data_dir, "orders_products_prior.csv")
-    train_path = os.path.join(data_dir, "orders_products_train.csv")
-    products_path = os.path.join(data_dir, "products.csv")
+def load_amazon_books_raw(data_dir: str, filename: str = "Books_5.json.gz") -> pd.DataFrame:
+    """Load in raw amazon books data from direct data"""
+    data_path = Path(data_dir) / filename
+    df = pd.read_json(data_path, lines = True)
 
-    orders = pd.read_csv(orders_path)
-    prior = pd.read_csv(prior_path)
-    train = pd.read_csv(train_path)
-    products = pd.read_csv(products_path)
+    return df
 
-    orders_products = pd.concat([prior, train], ignore_index = True)
-
-    return orders, orders_products, products
-
-def build_interactions(
-    orders: pd.DataFrame,
-    orders_products: pd.DataFrame
-) -> pd.DataFrame:
+def build_interactions(df: pd.DataFrame) -> pd.DataFrame:
     """Builds a user-item interaction table, returning: 
-    user_id, item_id, order_id, order_number, order_dow, order_hour_of_the_day"""
+    user_id, item_id, rating, timestamp"""
     #Only keep necessary columns
-    orders_small = orders[
-        ["orders_id", "user_id", "order_number", "order_dow", "order_hour_of_the_day"]
-    ]
-    merged = orders_products.merge(orders_small, on = "order_id", how = "inner")
+    df = df[
+        ["reviewerID", "asin", "overall", "unixReviewTime"]
+    ].dropna(subset = ["reviewerID", "asin"])
 
-    interactions = merged.rename(
+    interactions = df.rename(
         columns = {
-            "user_id": "user_id",
-            "product_id": "item_id"
+            "reviewerID": "user_id",
+            "asin": "item_id",
+            "overall": "rating",
+            "unixReviewTime": "timestamp",
         }
-    )[
-        [
-            "user_id",
-            "item_id",
-            "order_id",
-            "order_number",
-            "order_dow",
-            "order_hour_of_day"
-        ]
-    ]
+    ).copy()
+    interactions["timestamp"] = pd.to_datetime(interactions["timestamp"], unit = "s")
     
-    return interactions
+    
+    
+    return interactions[["user_id", "item_id", "rating", "timestamp"]]
 
 def load_interactions(data_dir: str) -> pd.DataFrame:
     "Convenience"
-    orders, orders_products, products = load_instacart_raw(data_dir)
-    interactions = build_interactions(orders, orders_products)
+    raw = load_amazon_books_raw(data_dir)
+    interactions = build_interactions(raw)
     return interactions
     
     
