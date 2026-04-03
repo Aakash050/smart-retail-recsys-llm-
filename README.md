@@ -36,7 +36,7 @@ In large-scale user information datasets, these limitations lead to:
 
 ---
 
-## 💡 Hypothesis
+## Hypothesis
 
 If we model user–item interactions as a **graph** and propagate information across connections:
 
