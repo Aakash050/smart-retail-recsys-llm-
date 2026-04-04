@@ -8,14 +8,13 @@ The following is an end-to-end recommendation system that uses **K Nearest Neigh
 
 Matching users with relevant items from massive catalogs has relevant real-world applications in nearly every field. For example, e-commerce, streaming, and social media are all heavily reliant on this to retain users. Recommender systems are central to this, allowing for what is essentially a personalized search engine. 
 
-This project builds a **three-stage recommendation framework**:
+This project builds **four recommendation algorithms**:
 
 1. A **global popularity method** for our baseline
 2. A **kNN** model 
 3. A **Matrix Factorization** model to learn latent user/item preferences
 4. A **Graph Neural Network (LGCN)** to model higher-order relationships beyond direct interactions
 
-The result is a system that moves from **linear latent structure → graph-based representation learning**.
 
 ---
 
