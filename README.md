@@ -114,7 +114,7 @@ Thus, we will have better metrics with Matrix Factorization and LGCN than with k
 
 ---
 
-### 5. Training & Evaluation
+### 6. Training & Evaluation
 
 * Optimization: **Bayesian Personalized Ranking (BPR) loss**
 * Metrics:
@@ -131,7 +131,12 @@ Thus, we will have better metrics with Matrix Factorization and LGCN than with k
 
 We see that Matrix Factorization and LGCN consistently outperform kNN. 
 
-<img width="285" height="128" alt="Screenshot 2026-04-03 at 5 15 28 PM" src="https://github.com/user-attachments/assets/bdfa5bf6-a447-4084-bb3b-5710c88ef0fd" />
+| Model | Recall@5 | Recall@10 | Recall@20 |
+|-------|----------|-----------|-----------|
+| Popularity | 0.1275 | 0.2137 | 0.3459 |
+| kNN | 0.0772 | 0.1334 | 0.2526 |
+| LightGCN | 0.1753 | 0.2370 | 0.3056 |
+| Matrix Factorization | 0.3440 | 0.3897 | 0.4361 |
 
 <img width="496" height="378" alt="Screenshot 2026-04-03 at 5 16 13 PM" src="https://github.com/user-attachments/assets/3dbd90f7-6902-4668-8764-9ab1b29fddfc" />
 
