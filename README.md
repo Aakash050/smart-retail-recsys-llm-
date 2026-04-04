@@ -129,12 +129,21 @@ Thus, we will have better metrics with Matrix Factorization and LGCN than with k
 
 **At k = 5, Matrix Factorization has a recall of 3.4x kNN**
 
-Qualitative improvements:
+We see that Matrix Factorization and LGCN consistently outperform kNN. 
+
+<img width="285" height="128" alt="Screenshot 2026-04-03 at 5 15 28 PM" src="https://github.com/user-attachments/assets/bdfa5bf6-a447-4084-bb3b-5710c88ef0fd" />
+
+<img width="496" height="378" alt="Screenshot 2026-04-03 at 5 16 13 PM" src="https://github.com/user-attachments/assets/3dbd90f7-6902-4668-8764-9ab1b29fddfc" />
+
+However we also see that LGCN doesn't perform as well as expected, and even underperforms kNN at k = 20. This could be for a few reasons, mainly being LGCN is sensitive to various hyperparameters, and it is entirely possible I haven't found the optimal setting of each parameter. Additionally, LGCN tends to perform better with more data, and with 100,000 entries, and 80 epochs, it is possible that LGCN would perform better at higher levels. 
+
+
+Next Qualitative improvements:
 
 * Recommends items through **indirect user similarity paths**
 * Learns **community-level structure** in user behavior
 
-System-level improvements:
+Next system-level improvements:
 
 * Efficient pipeline using **DuckDB + Parquet**
 * Scales to large datasets without full in-memory computation
