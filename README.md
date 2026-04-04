@@ -10,9 +10,10 @@ Matching users with relevant items from massive catalogs has relevant real-world
 
 This project builds a **three-stage recommendation framework**:
 
-1. A **kNN** model for our baseline
-2. A **Matrix Factorization** model to learn latent user/item preferences
-3. A **Graph Neural Network (LGCN)** to model higher-order relationships beyond direct interactions
+1. A **global popularity method** for our baseline
+2. A **kNN** model 
+3. A **Matrix Factorization** model to learn latent user/item preferences
+4. A **Graph Neural Network (LGCN)** to model higher-order relationships beyond direct interactions
 
 The result is a system that moves from **linear latent structure → graph-based representation learning**.
 
@@ -20,14 +21,14 @@ The result is a system that moves from **linear latent structure → graph-based
 
 ## Problem
 
-While effective to some extent, older recommendation approaches like **k-Nearest Neighbors (kNN)** assume that user preferences can be inferred by identifying similar users or items based on past interactions.
+While effective to some extent, older approaches like **global popularity** naively assume that rankings over every user will apply for all users, ignoring that most users tend to have more specific preferences. 
 
-Although intuitive and easy to implement, kNN has key limitations:
+Although intuitive and easy to implement, global popularity has key limitations.
 
-* Relies entirely on local similarity, limiting its ability to generalize beyond immediate neighbors
-* Does not effectively capture higher-order relationships (e.g., connections through multiple users/items)
-* Performance falls under data sparsity (high percentage of missing data), where similarity estimates become unreliable
-
+* Relies entirely on the overall user popularity being enticing to individual users.
+* Problems with large numbers of users, due to increased load
+* Inaccurate results with sparse data (high percentage of missing values)
+  
 In large-scale user information datasets, these limitations lead to:
 
 * Poor recommendations for new or infrequent users and items (cold-start and sparsity issues)
@@ -57,71 +58,121 @@ Thus, we will have better metrics with Matrix Factorization and LGCN than with k
 
 ---
 
-### 2. Baseline: kNN
+### 2. Baseline: Global Popularity
+
+* Construct user–item interaction data
+  
+* Compute item popularity via:
+  
+  * Aggregating interaction strength per item 
+  * Ranking items globally by descending popularity score
+    
+* Generate recommendations by:
+  
+  * Selecting the Top-K most popular items
+  * Returning the same ranked list for all users (no personalization)
+
+* Output:
+  
+  * Global item ranking based on aggregated interaction scores
+  * Ranked Top-K recommendations per user
+
+---
+
+### 3. Model 1: kNN
 
 * Construct user–item interaction matrix
   
 * Compute similarity via:
   
-  * User–user similarity (collaborative filtering) or item–item similarity
+  * Item–item similarity
   * Cosine Similarity
     
 * Generate recommendations by:
   
-  * Identifying top-k nearest neighbors
-  * Aggregating neighbor preferences to score unseen items
+  * Identifying items the user has interacted with
+  * Retrieving top k similar items for each interacted item
+  * Aggregating candidate items and filtering out previously seen items
     
 * Output:
   
-  * Similarity matrix (user–user or item–item)
+  * Item-item similarity structure via k nearest neighbors
   * Ranked Top-K recommendations per user
 
 ---
 
-### 3. Model 1: Matrix Factorization
+### 4. Model 2: Matrix Factorization
 
 * Construct user–item interaction matrix
 
 * Learn embeddings via:
 
-  * Implicit feedback modeling
-  * Pairwise ranking loss (BPR)
+  * Implicit feedback modeling using confidence-weighted interactions 
+  * Alternating Least Squares (ALS) optimization
+
+* Generate recommendations by:
+  
+  * Factorizing the interaction matrix into user and item latent vectors
+  * Ranking items based on predicted user–item affinity scores 
 
 * Output:
 
   * User latent vectors
   * Item latent vectors
-  * Baseline Top-K recommendations
+  * Ranked Top-K recommendations per user
 
 ---
 
-### 4. Graph Construction
+### 5. Graph Construction
 
 * Build a **bipartite graph**:
 
   * Nodes: users + items
-  * Edges: interactions (purchases, views)
+  * Edges: observed interactions
+
+* Construct a **symmetric normalized adjacency matrix**
+  
+  * Applies degree normalization to stabilize embedding propagation
+  * Enables efficient sparse matrix operations
+    
+---
+
+### 6. Model 3: LightGCN
+
+* Initialize learnable user and item embeddings
+  
+* Perform layerwise embedding propagations
+
+  * Repeatedly aggregate neighbor information via sparse matrix multiplication
+  * Remove nonlinearities -> focus on pure neighborhood aggregation
+
+* Aggregate embeddings across layers
+
+  * Final embedding = mean of all layer representations
+  * Captures multi-hop collaborative signals
 
 ---
 
-### 5. Model 2: LightGCN
+### 7. Training & Evaluation
 
-* Remove nonlinearities → focus on **pure neighborhood aggregation**
-* Propagate embeddings across graph layers:
-
-  * Captures **multi-hop relationships**
-  * Incorporates collaborative signals beyond direct interactions
-
----
-
-### 6. Training & Evaluation
-
-* Optimization: **Bayesian Personalized Ranking (BPR) loss**
+* Optimization: **Bayesian Personalized Ranking (BPR) loss** with negative sampling
+* Encourages positive interactions to rank higher than unobserved items
+  
+* Training details:
+  
+  * Mini-batch training with sampled (user, positive, negative) triplets
+  * L2 regularization on embeddings
+    
+* Retrieval:
+  
+  * Use FAISS for efficient nearest neighbor search in embedding space
+  * Filter out previously seen items
+  
 * Metrics:
 
   * Recall@K
   * Precision@K
-  * Ranking quality vs kNN baseline
+  * Ranking quality vs global popularity baseline
 
 ---
 
@@ -140,7 +191,7 @@ We see that Matrix Factorization and LGCN consistently outperform kNN.
 
 <img width="496" height="378" alt="Screenshot 2026-04-03 at 5 16 13 PM" src="https://github.com/user-attachments/assets/3dbd90f7-6902-4668-8764-9ab1b29fddfc" />
 
-However we also see that LGCN doesn't perform as well as expected, and even underperforms kNN at k = 20. This could be for a few reasons, mainly being LGCN is sensitive to various hyperparameters, and it is entirely possible I haven't found the optimal setting of each parameter. Additionally, LGCN tends to perform better with more data, and with 100,000 entries, and 80 epochs, it is possible that LGCN would perform better at higher levels. 
+However, we also see that LGCN doesn't perform as well as expected, and even underperforms kNN at k = 20. This could be for a few reasons, mainly being that LGCN is sensitive to various hyperparameters, and it is entirely possible I haven't found the optimal setting of each parameter. Additionally, LGCN tends to perform better with more data, and with 100,000 entries and 80 epochs, it is possible that LGCN would perform better at higher levels. 
 
 
 Next Qualitative improvements:
