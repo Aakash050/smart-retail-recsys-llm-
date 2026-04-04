@@ -184,7 +184,7 @@ Thus, we will have better metrics with Matrix Factorization and LGCN than with k
 
 ## Results
 
-**At k = 5, Matrix Factorization has a recall of 3.4x kNN**
+**At k = 5, Matrix Factorization has a recall of 4.5x kNN, and 2.7x Global Popularity**
 
 We see that Matrix Factorization and LGCN consistently outperform kNN. 
 
