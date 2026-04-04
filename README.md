@@ -156,6 +156,12 @@ Thus, we will have better metrics with Matrix Factorization and LGCN than with k
 ### 7. Training & Evaluation
 
 * Optimization: **Bayesian Personalized Ranking (BPR) loss** with negative sampling
+  
+  * 64 dimensional embeddings
+  * 3 GCN layers
+  *  Batch size 1020
+  *  Adam Optimizer
+    
 * Encourages positive interactions to rank higher than unobserved items
   
 * Training details:
@@ -193,24 +199,13 @@ We see that Matrix Factorization and LGCN consistently outperform kNN.
 
 However, we also see that LGCN doesn't perform as well as expected, and even underperforms kNN at k = 20. This could be for a few reasons, mainly being that LGCN is sensitive to various hyperparameters, and it is entirely possible I haven't found the optimal setting of each parameter. Additionally, LGCN tends to perform better with more data, and with 100,000 entries and 80 epochs, it is possible that LGCN would perform better at higher levels. 
 
-
-Next Qualitative improvements:
-
-* Recommends items through **indirect user similarity paths**
-* Learns **community-level structure** in user behavior
-
-Next system-level improvements:
-
-* Efficient pipeline using **DuckDB + Parquet**
-* Scales to large datasets without full in-memory computation
-
 ---
 
 ## Conclusion
 
-K Nearest Neighbors (kNN) provides a simple and interpretable baseline for recommendation systems by leveraging local similarity between users or items. However, it is limited by its reliance on surface-level, neighborhood-based relationships and struggles with sparsity and scalability.
+Global popularity provides a simple and interpretable baseline for recommendation systems by aggregating overall user preferences. However, it is limited by its non-specificity.
 
-By introducing Matrix Factorization (MF), this project moves beyond local similarity to learn latent user and item representations, enabling better generalization and capturing underlying preference structure.
+By introducing kNN, and Matrix Factorization (MF) this project moves beyond local similarity to learn nearest neighbors using cosine similarity, and latent user and item representations, enabling better generalization and capturing underlying preference structure.
 
 Further extending to graph-based learning (LGCN), the project demonstrates:
 
